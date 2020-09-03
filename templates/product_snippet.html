@@ -1,0 +1,12 @@
+<div class="mt-3">
+  <h3 class="card-title">
+    <strong>{{product.name}}</strong>
+  </h3>
+  {% for plan in product.plan_set.all %}
+    <div>
+      <p class="heading">{{ plan.nickname }}</p>
+      <p>{{ plan.human_readable_price }}</p>
+    </div>
+  {% endfor %}
+
+</div>

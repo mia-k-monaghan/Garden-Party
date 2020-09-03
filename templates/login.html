@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<main class="mt-5 pt-4">
+
+<div class="container">
+  <div class="jumbotron text-white text-center green-gradient wow fadeIn">
+    <h1 class="">Login</h1>
+
+  </div>
+    <div class="col-md-8 mx-auto">
+      <form method="POST">
+        {% csrf_token %}
+        <div class="col-lg-4 col-md-12 mb-4">
+          <label for="username">Username*</label>
+          <input type="text" name="username" id='username' placeholder="Username" class="form-control">
+        </div>
+        <div class="col-lg-4 col-md-12 mb-4">
+          <label for="password">Password*</label>
+          <input type="password" name="password" id='password' class="form-control">
+        </div>
+
+        <div class="form-actions">
+          <input type="submit" class="btn btn-primary" value="Login">
+        </div>
+      </form>
+    </div>
+
+
+</div>
+</main>
+
+
+
+
+
+
+
+{% endblock content %}

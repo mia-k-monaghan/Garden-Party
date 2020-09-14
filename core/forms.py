@@ -57,6 +57,8 @@ class SubscribeForm(forms.Form):
             #     ),
             # )
         )
-        self.helper.form_id = 'id-SubscribeForm'
+        self.helper.form_id = 'payment-form'
         self.helper.form_method = 'POST'
-        self.helper.form_action = 'core:checkout'
+        self.helper.form_action = 'core:payment-complete'
+        self.helper.disable_csrf = True
+        self.helper.form_tag = False

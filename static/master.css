@@ -1,0 +1,7 @@
+.resizeimage {
+  height: 5px;
+  width: 5px;
+}
+
+.green-gradient {
+  background: linear-gradient(40deg, #00591c, #7df0a1) !important; }

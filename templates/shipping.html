@@ -2,48 +2,26 @@
 {% load static %}
 {% load crispy_forms_tags %}
 {% block content %}
-  <script src="https://js.stripe.com/v3/"></script>
 
   <div class="container text-center">
     <h1>Subscribe</h1>
-    <p class="text-muted ">Enter card details.  Your subscription will start immediately</p>
+    <p class="text-muted ">Enter shipping details.  You will recieve seeds based on your location.</p>
   </div>
     <div class="col-md-8 my-3 mx-auto">
     	<div class="card mx-5">
     		<div class="card-body">
     			<div class="sr-root">
     				<div class="sr-main">
-    					<form id="payment-form" class="sr-payment-form">
+    					<form id="shipping-form" class="sr-payment-form" method="POST">
     				    {% csrf_token %}
-                  <h4 class="mb-4">Payment</h4>
-                  <p><strong>Subscription:</strong> {{product.name}}</p>
-                  <p><strong>Total:</strong> ${{total}}</p>
-                	<div class="sr-combo-inputs-row mt-2">
-                  	<div class="sr-input sr-card-element" id="card-element"></div>
-                	</div>
-                	<div class="sr-field-error" id="card-errors" role="alert"></div>
-                	<button id="submit" class="btn">
-                    <div class="spinner-border  spinner-border-sm text-light hidden" id="spinner" role="status">
-                     	<span class="sr-only">Loading...</span>
-                    </div>
-                    <span id="button-text">Subscribe</span><span id="order-amount"></span>
-                	</button>
+                  {% crispy form %}
+                  <button type="submit" name="button" class="btn" id="submit">Next</button>
               </form>
-    	        <div class="sr-result hidden">
-    	          <p>Payment completed<br></p>
-    	          <pre>
-    	            <code></code>
-    	          </pre>
-    	        </div>
     		    </div>
     			</div>
         </div>
     	</div>
 
-		  <form id="payload" class="hidden" action="/payment-complete" method="post">
-		    {% csrf_token %}
-		    <input id ="data-payload" type="hidden" name="payload"/>
-      </form>
 </div>
 </div>
 
@@ -132,5 +110,4 @@
         background: var(--button-color);
       }
       </style>
-      <script type="text/javascript" src="{% static 'garden_party/js/script.js' %}"></script>
 {% endblock %}

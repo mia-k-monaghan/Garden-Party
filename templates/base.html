@@ -74,9 +74,6 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                          <a href="{% url 'core:cart' %}" class="nav-link border border-light rounded waves-effect">My Cart</a>
-                        </li>
-                        <li class="nav-item">
                           {% if user.is_authenticated %}
                             <a href="#" class="nav-link border border-light rounded waves-effect">Logout</a>
                           {% else %}
@@ -142,8 +139,6 @@
         new WOW().init();
     </script>
 
-    <!--stripe-->
-    <script type="text/javascript" src="{% static "script.js" %}"></script>
 
 
 </body>

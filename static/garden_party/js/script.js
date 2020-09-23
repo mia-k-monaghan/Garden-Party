@@ -1,128 +1,119 @@
-var orderData = {
-      items: [{ id: "products" }],
-      currency: "usd",
-    };
+document.getElementById("submit").disabled = true;
+stripeElements();
+function stripeElements() {
+  stripe = Stripe('pk_test_51HA03iLPfeVqJ0LGF7vJErtgow7hEF95tZc3jk1zhMmpXAcEfTR0mBSiPqu4oqlivxO9EAGfeIegQAIXzhUKbMWl00tdieedgt');
+  if (document.getElementById('card-element')) {
+    let elements = stripe.elements();
+    // Card Element styles
+    let style = {
+    	base: {
+    		color: "#32325d",
+    		fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+    		fontSmoothing: "antialiased",
+    		fontSize: "16px",
+    		"::placeholder": {
+    			color: "#aab7c4"
+    		}
+    	},
+    	invalid: {
+    		color: "#fa755a",
+    		iconColor: "#fa755a"
+    	}
+    }; //end of syle
+    card = elements.create('card', { style: style });
+    card.mount('#card-element');
+    card.on('focus', function () {
+      let el = document.getElementById('card-errors');
+      el.classList.add('focused');
+    });
+    card.on('blur', function () {
+      let el = document.getElementById('card-errors');
+      el.classList.remove('focused');
+    });
+    card.on('change', function (event) {
+      displayError(event);
+    });
+  } //end of if card element
 
-    // Disable the button until we have Stripe set up on the page
-    document.getElementById("submit").disabled = true;
+  //we'll add payment form handling here
+      let paymentForm = document.getElementById('payment-form');
+      	if (paymentForm) {
+      		paymentForm.addEventListener('submit', function (evt) {
+      			evt.preventDefault();
+      			changeLoadingState(true);
+      	      // create new payment method & create subscription
+      	      createPaymentMethod({ card });
+      	  }); //end of paymentForm Eventlistener
+      	} //end of if paymentForm
 
-    fetch("/create-payment-intent", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(orderData)
-    })
-      .then(function(result) {
-        return result.json();
-      })
-      .then(function(data) {
-        return setupElements(data);
-      })
-      .then(function({ stripe, card, clientSecret }) {
-        document.getElementById("submit").disabled = false;
+      function createPaymentMethod({ card }) {
+        // Set up payment method for recurring usage
+        let billingName = 'test';
+        stripe.createPaymentMethod({
+            type: 'card',
+            card: card,
+            billing_details: {
+              name: billingName,
+            },
+          }) //end of stripe.createPaymentMethod
+          .then((result) => {
+            if (result.error) {
+              displayError(result);
+            } else {
+             const paymentParams = {
+                price_id: document.getElementById("priceId").innerHTML,
+                payment_method: result.paymentMethod.id,
+            };
+            fetch("/create-payment-intent", {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken':'{{ csrf_token }}',
+              },
+              credentials: 'same-origin',
+              body: JSON.stringify(paymentParams),
+            })
+            .then((response) => {
+              return response.json();
+            })
+            .then((result) => {
+            	if (result.error) {
+                // The card had an error when trying to attach it to a customer
+                throw result;
+              }
+              return result;
+            })
+            .then((result) => {
+            	if (result && result.status === 'active') {
+               window.location.href = '/payment-complete';
+            	};
+            })
+            .catch(function (error) {
+                displayError(result.error.message);
+            });
+          } //end of else
+        }); //end of .then(result)
 
-        // Handle form submission.
-        var form = document.getElementById("payment-form");
-        form.addEventListener("submit", function(event) {
-          event.preventDefault();
-          // Initiate payment when the submit button is clicked
-          pay(stripe, card, clientSecret);
-        });
-      });
+      var changeLoadingState = function(isLoading) {
+      	if (isLoading) {
+      		document.getElementById("submit").disabled = true;
+      		document.querySelector("#spinner").classList.remove("hidden");
+      		document.querySelector("#button-text").classList.add("hidden");
+      	} else {
+      		document.getElementById("submit").disabled = false;
+      		document.querySelector("#spinner").classList.add("hidden");
+      		document.querySelector("#button-text").classList.remove("hidden");
+      	}
+      }; //end of changeLoadingState
 
-    // Set up Stripe.js and Elements to use in checkout form
-    var setupElements = function(data) {
-      stripe = Stripe(data.publishableKey);
-      var elements = stripe.elements();
-      var style = {
-        base: {
-          color: "#32325d",
-          fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-          fontSmoothing: "antialiased",
-          fontSize: "16px",
-          "::placeholder": {
-            color: "#aab7c4"
-          }
-        },
-        invalid: {
-          color: "#fa755a",
-          iconColor: "#fa755a"
-        }
-      };
+} //end of stripe elements
 
-      var card = elements.create("card", { style: style });
-      card.mount("#card-element");
+function displayError(event) {
 
-      return {
-        stripe: stripe,
-        card: card,
-        clientSecret: data.clientSecret
-      };
-    };
-
-    /*
-     * Calls stripe.confirmCardPayment which creates a pop-up modal to
-     * prompt the user to enter extra authentication details without leaving your page
-     */
-    var pay = function(stripe, card, clientSecret) {
-      changeLoadingState(true);
-
-      // Initiate the payment.
-      // If authentication is required, confirmCardPayment will automatically display a modal
-      stripe
-        .confirmCardPayment(clientSecret, {
-          payment_method: {
-            card: card
-          }
-        })
-        .then(function(result) {
-          if (result.error) {
-            // Show error to your customer
-            showError(result.error.message);
-          } else {
-            // The payment has been processed!
-            orderComplete(clientSecret);
-          }
-        });
-    };
-
-    /* ------- Post-payment helpers ------- */
-
-    /* Shows a success / error message when the payment is complete */
-    var orderComplete = function(clientSecret) {
-      // Just for the purpose of the sample, show the PaymentIntent response object
-      stripe.retrievePaymentIntent(clientSecret).then(function(result) {
-        var paymentIntent = result.paymentIntent;
-        var paymentIntentJson = JSON.stringify(paymentIntent, null, 2);
-
-        // post data and show new page
-        var form2 =document.getElementById("payload");
-        var input = document.getElementById("data-payload")
-        input.value = paymentIntentJson;
-        form2.submit();
-        changeLoadingState(false);
-      });
-    };
-
-    var showError = function(errorMsgText) {
-      changeLoadingState(false);
-      var errorMsg = document.querySelector(".sr-field-error");
-      errorMsg.textContent = errorMsgText;
-      setTimeout(function() {
-        errorMsg.textContent = "";
-      }, 4000);
-    };
-
-    // Show a spinner on payment submission
-    var changeLoadingState = function(isLoading) {
-      if (isLoading) {
-        document.getElementById("submit").disabled = true;
-        document.querySelector("#spinner").classList.remove("hidden");
-        document.querySelector("#button-text").classList.add("hidden");
-      } else {
-        document.getElementById("submit").disabled = false;
-        document.querySelector("#spinner").classList.add("hidden");
-        document.querySelector("#button-text").classList.remove("hidden");
-      }
-    };
+  let displayError = document.getElementById('card-errors');
+  if (event.error) {
+    displayError.textContent = event.error.message;
+  } else {
+    displayError.textContent = '';
+  }
+} //end of display error function

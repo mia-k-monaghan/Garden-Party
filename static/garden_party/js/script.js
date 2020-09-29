@@ -1,7 +1,10 @@
 document.getElementById("submit").disabled = true;
 stripeElements();
+
+
 function stripeElements() {
   stripe = Stripe('pk_test_51HA03iLPfeVqJ0LGF7vJErtgow7hEF95tZc3jk1zhMmpXAcEfTR0mBSiPqu4oqlivxO9EAGfeIegQAIXzhUKbMWl00tdieedgt');
+
   if (document.getElementById('card-element')) {
     let elements = stripe.elements();
     // Card Element styles
@@ -19,7 +22,7 @@ function stripeElements() {
     		color: "#fa755a",
     		iconColor: "#fa755a"
     	}
-    }; //end of syle
+    };
     card = elements.create('card', { style: style });
     card.mount('#card-element');
     card.on('focus', function () {
@@ -33,80 +36,89 @@ function stripeElements() {
     card.on('change', function (event) {
       displayError(event);
     });
-  } //end of if card element
-
+  }
   //we'll add payment form handling here
-      let paymentForm = document.getElementById('payment-form');
-      	if (paymentForm) {
-      		paymentForm.addEventListener('submit', function (evt) {
-      			evt.preventDefault();
-      			changeLoadingState(true);
-      	      // create new payment method & create subscription
-      	      createPaymentMethod({ card });
-      	  }); //end of paymentForm Eventlistener
-      	} //end of if paymentForm
+  let paymentForm = document.getElementById('payment-form');
+	if (paymentForm) {
+    document.getElementById("submit").disabled = false;
 
-      function createPaymentMethod({ card }) {
-        // Set up payment method for recurring usage
-        let billingName = 'test';
-        stripe.createPaymentMethod({
-            type: 'card',
-            card: card,
-            billing_details: {
-              name: billingName,
-            },
-          }) //end of stripe.createPaymentMethod
-          .then((result) => {
-            if (result.error) {
-              displayError(result);
-            } else {
-             const paymentParams = {
-                price_id: document.getElementById("priceId").innerHTML,
-                payment_method: result.paymentMethod.id,
-            };
-            fetch("/create-payment-intent", {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken':'{{ csrf_token }}',
-              },
-              credentials: 'same-origin',
-              body: JSON.stringify(paymentParams),
-            })
-            .then((response) => {
-              return response.json();
-            })
-            .then((result) => {
-            	if (result.error) {
-                // The card had an error when trying to attach it to a customer
-                throw result;
-              }
-              return result;
-            })
-            .then((result) => {
-            	if (result && result.status === 'active') {
-               window.location.href = '/payment-complete';
-            	};
-            })
-            .catch(function (error) {
-                displayError(result.error.message);
-            });
-          } //end of else
-        }); //end of .then(result)
+		paymentForm.addEventListener('submit', function (evt) {
+			evt.preventDefault();
+			changeLoadingState(true);
 
-      var changeLoadingState = function(isLoading) {
-      	if (isLoading) {
-      		document.getElementById("submit").disabled = true;
-      		document.querySelector("#spinner").classList.remove("hidden");
-      		document.querySelector("#button-text").classList.add("hidden");
-      	} else {
-      		document.getElementById("submit").disabled = false;
-      		document.querySelector("#spinner").classList.add("hidden");
-      		document.querySelector("#button-text").classList.remove("hidden");
-      	}
-      }; //end of changeLoadingState
+	      // create new payment method & create subscription
+      createPaymentMethod({ card });
 
-} //end of stripe elements
+	  });
+	}
+} //end of stripeElements
+
+function createPaymentMethod({ card }) {
+
+  // Set up payment method for recurring usage
+  let billingName = '{{user.username}}';
+  stripe
+    .createPaymentMethod({
+      type: 'card',
+      card: card,
+      billing_details: {
+        name: billingName,
+      },
+    })
+    .then((result) => {
+      if (result.error) {
+        displayError(result);
+      } else {
+       const paymentParams = {
+          price_id: document.getElementById("priceId").innerHTML,
+          payment_method: result.paymentMethod.id,
+      };
+      fetch("/create-payment-intent", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken':'{{ csrf_token }}',
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(paymentParams),
+      })
+      .then((response) => {
+        return response.json();
+
+      })
+      .then((result) => {
+      	if (result.error) {
+          // The card had an error when trying to attach it to a customer
+          throw result;
+        }
+        return result;
+      })
+      .then((result) => {
+      	if (result && result.status === 'active') {
+         window.location.href = '/payment-complete';
+      	};
+      })
+      .catch(function (error) {
+          displayError(result.error.message);
+      });
+    } //end of else
+  }); //end of then result
+
+} //end of createPaymentMethod
+
+var changeLoadingState = function(isLoading) {
+	if (isLoading) {
+		document.getElementById("submit").disabled = true;
+		document.querySelector("#spinner").classList.remove("hidden");
+		document.querySelector("#button-text").classList.add("hidden");
+	} else {
+		document.getElementById("submit").disabled = false;
+		document.querySelector("#spinner").classList.add("hidden");
+		document.querySelector("#button-text").classList.remove("hidden");
+	}
+};
+
+
 
 function displayError(event) {
 
@@ -116,4 +128,4 @@ function displayError(event) {
   } else {
     displayError.textContent = '';
   }
-} //end of display error function
+}

@@ -21,18 +21,13 @@ from .forms import SubscribeForm
 
 class HomeView(ListView):
     model = Product
-    template_name = 'index.html'
+    template_name = 'core/index.html'
     context_object_name = 'products'
-
-def test_view(request):
-    custom_user = request.user
-
-    return render(request,'test.html', {'user':custom_user})
 
 
 class ItemDetailView(DetailView):
     model = Product
-    template_name = 'item_detail.html'
+    template_name = 'core/item_detail.html'
 
 
 @csrf_exempt
@@ -76,7 +71,7 @@ def createpayment(request):
         except Exception as e:
             return JsonResponse({'error':str(e)},status= 403)
 def paymentcomplete(request):
-    return render(request, 'payment-complete.html')
+    return render(request, 'core/payment-complete.html')
 
 #
 class CheckoutView(LoginRequiredMixin,View):
@@ -90,7 +85,7 @@ class CheckoutView(LoginRequiredMixin,View):
             'product':product,
             'total':total
         }
-        return render(self.request, 'checkout.html', context)
+        return render(self.request, 'core/checkout.html', context)
 
 
 class ShippingView(LoginRequiredMixin, View):
@@ -101,7 +96,7 @@ class ShippingView(LoginRequiredMixin, View):
         context= {
             'form':form,
         }
-        return render(self.request, 'shipping.html', context)
+        return render(self.request, 'core/shipping.html', context)
 
     def post(self, *args, **kwargs):
         form = SubscribeForm(self.request.POST)
@@ -113,3 +108,5 @@ class ShippingView(LoginRequiredMixin, View):
             new_address.save()
 
         return HttpResponseRedirect(reverse('core:checkout'))
+
+    

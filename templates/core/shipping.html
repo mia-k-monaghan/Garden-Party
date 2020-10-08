@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+  <div class="container text-center">
+    <h1>Subscribe</h1>
+    <p class="text-muted "> Step 2 of 3 </p>
+    <p class="text-muted ">Enter shipping details. All shipping is free!</p>
+  </div>
+    <div class="col-md-8 my-3 mx-auto">
+    	<div class="card mx-5">
+    		<div class="card-body">
+    			<div class="sr-root">
+    				<div class="sr-main">
+    					<form id="shipping-form" class="sr-payment-form" method="POST">
+    				    {% csrf_token %}
+                  {% crispy form %}
+                  <button type="submit" name="button" class="btn" id="submit">Next</button>
+              </form>
+    		    </div>
+    			</div>
+        </div>
+    	</div>
+
+</div>
+</div>
+
+  </div>
+
+{% endblock %}

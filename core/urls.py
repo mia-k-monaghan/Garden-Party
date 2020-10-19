@@ -10,5 +10,6 @@ urlpatterns = [
     path('payment-complete',views.paymentcomplete,name='payment-complete'),
     path('checkout/', views.CheckoutView.as_view(), name='checkout'),
     path('shipping/', views.ShippingView.as_view(), name='shipping'),
+    path('account/<pk>/shipping-update/', views.ShippingUpdateView.as_view(),name='shipping-update'),
 
 ]

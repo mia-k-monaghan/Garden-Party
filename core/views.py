@@ -6,12 +6,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 # from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
 from djstripe.models import Product, Plan
-from .models import Cart, Address as A
+from .models import Address as A
 from users.models import CustomUser
 from django.views.decorators.csrf import csrf_exempt
 # from django.utils import timezone
 from django.urls import reverse_lazy, reverse
-from django.views.generic import ListView, DetailView, View, CreateView
+from django.views.generic import ListView, DetailView, View, CreateView, UpdateView
 import stripe
 import json
 import djstripe
@@ -109,4 +109,12 @@ class ShippingView(LoginRequiredMixin, View):
 
         return HttpResponseRedirect(reverse('core:checkout'))
 
-    
+class ShippingUpdateView(LoginRequiredMixin, UpdateView):
+    model=A
+    form_class = SubscribeForm
+    template_name = 'core/shipping_update.html'
+
+
+    def get_success_url(self):
+        pk = self.object.pk
+        return reverse_lazy('users:account',args=[pk])

@@ -3,6 +3,7 @@
 <html lang="en">
 
 <head>
+  <script src="https://use.fontawesome.com/4629e5d856.js"></script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -15,7 +16,6 @@
 
     {% endblock %}
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
     <!-- Bootstrap core CSS -->
     <link href="{% static "garden_party/css/bootstrap.min.css" %}" rel="stylesheet">
     <!-- Material Design Bootstrap -->
@@ -73,8 +73,20 @@
                         </li>
 
                           {% if user.is_authenticated %}
-                          <li class="nav-item">
-                            <a href="{% url 'users:account' pk=request.user.pk %}" class="nav-link waves-effect">My Account</a>
+                          <li class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" id='navbarDropdown' role="button"data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              My Account
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                              <a href="{% url 'users:account' pk=request.user.pk %}" class="dropdown-item waves-effect">
+                                <i class="fa fa-user mr-3"></i>Profile</a>
+                              <a href="#" class="dropdown-item waves-effect">
+                                <i class="fa fa-envelope-open mr-3"></i>Subscription
+                              </a>
+                              <a href="#" class="dropdown-item waves-effect">
+                                <i class="fa fa-table mr-3"></i>History</a>
+                            </div>
+
                           </li>
 
                           <li class="nav-item">

@@ -29,3 +29,9 @@ class CustomUser(AbstractUser):
         if not self.username:
             self.username = self.email
         super(CustomUser,self).save(*args,**kwargs)
+
+class LaunchSignUp(models.Model):
+    email = models.EmailField(_('email address'), unique=True)
+
+    def __str__(self):
+        return (self.email)

@@ -8,7 +8,7 @@ from django.views.generic import ListView, DetailView, View, FormView, UpdateVie
 from django.contrib.auth import views as auth_views
 from djstripe.models import PaymentMethod
 
-from .models import CustomUser
+from .models import CustomUser, LaunchSignUp
 from core.models import Address
 
 # Create your views here.
@@ -61,3 +61,14 @@ class SignupView(CreateView):
                             password=password)
         login(self.request, user)
         return valid
+
+class LaunchView(CreateView):
+    model = LaunchSignUp
+    template_name = 'launch.html'
+    fields = ['email']
+
+    def get_success_url(self):
+        return reverse_lazy('users:launch-success')
+
+def LaunchSuccessView(request):
+    return render(request, 'users/launch_success.html')

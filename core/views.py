@@ -33,6 +33,7 @@ class ItemDetailView(DetailView):
 @csrf_exempt
 @login_required
 def createpayment(request):
+
     custom_user = request.user
     stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
     if request.method=="POST":
@@ -42,20 +43,22 @@ def createpayment(request):
         djstripe.models.PaymentMethod.sync_from_stripe_data(payment_method_obj)
 
         try:
+
             # This creates a new Customer and attaches the PaymentMethod in one API call.
-	        customer = stripe.Customer.create(
+            customer = stripe.Customer.create(
 	            payment_method=payment_method,
 	            email=request.user.email,
 	            invoice_settings={
 	                'default_payment_method': payment_method
-	            }
-	        )
-	        djstripe_customer = djstripe.models.Customer.sync_from_stripe_data(customer)
-	        custom_user.customer = djstripe_customer
+	            })
+
+            djstripe_customer, created = djstripe.models.Customer.sync_from_stripe_data(customer)
+            custom_user.customer = djstripe_customer
+
 
 
 	        # Subscribe the user to the subscription created
-	        subscription = stripe.Subscription.create(
+            subscription = stripe.Subscription.create(
 	            customer=customer.id,
 	            items=[
 	                {
@@ -64,10 +67,10 @@ def createpayment(request):
 	            ],
 	            expand=["latest_invoice.payment_intent"]
 	        )
-	        djstripe_subscription = djstripe.models.Subscription.sync_from_stripe_data(subscription)
-	        custom_user.subscription = djstripe_subscription
-	        custom_user.save()
-	        return JsonResponse(subscription)
+            djstripe_subscription = djstripe.models.Subscription.sync_from_stripe_data(subscription)
+            custom_user.subscription = djstripe_subscription
+            custom_user.save()
+            return JsonResponse(subscription)
         except Exception as e:
             return JsonResponse({'error':str(e)},status= 403)
 def paymentcomplete(request):

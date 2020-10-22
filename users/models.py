@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
 class CustomUser(models.Model):
-    user = models.CharField(max_length=50)
+    user = models.CharField(max_length=50, unique=True)
 #     email = models.EmailField(_('email address'), unique=True)
 #     customer = models.ForeignKey(
 #         Customer, null=True, blank=True, on_delete=models.SET_NULL,

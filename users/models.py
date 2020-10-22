@@ -6,7 +6,8 @@ from djstripe.utils import subscriber_has_active_subscription
 from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
-# class CustomUser(AbstractUser):
+class CustomUser(models.Model):
+    pass
 #     email = models.EmailField(_('email address'), unique=True)
 #     customer = models.ForeignKey(
 #         Customer, null=True, blank=True, on_delete=models.SET_NULL,

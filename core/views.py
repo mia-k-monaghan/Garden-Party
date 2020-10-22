@@ -6,12 +6,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 # from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
 from djstripe.models import Product, Plan
-from .models import Cart, Address as A
+from .models import Address as A
 from users.models import CustomUser
 from django.views.decorators.csrf import csrf_exempt
 # from django.utils import timezone
 from django.urls import reverse_lazy, reverse
-from django.views.generic import ListView, DetailView, View, CreateView
+from django.views.generic import ListView, DetailView, View, CreateView, UpdateView
 import stripe
 import json
 import djstripe
@@ -33,6 +33,7 @@ class ItemDetailView(DetailView):
 @csrf_exempt
 @login_required
 def createpayment(request):
+
     custom_user = request.user
     stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
     if request.method=="POST":
@@ -42,20 +43,22 @@ def createpayment(request):
         djstripe.models.PaymentMethod.sync_from_stripe_data(payment_method_obj)
 
         try:
+
             # This creates a new Customer and attaches the PaymentMethod in one API call.
-	        customer = stripe.Customer.create(
+            customer = stripe.Customer.create(
 	            payment_method=payment_method,
 	            email=request.user.email,
 	            invoice_settings={
 	                'default_payment_method': payment_method
-	            }
-	        )
-	        djstripe_customer = djstripe.models.Customer.sync_from_stripe_data(customer)
-	        custom_user.customer = djstripe_customer
+	            })
+
+            djstripe_customer, created = djstripe.models.Customer.sync_from_stripe_data(customer)
+            custom_user.customer = djstripe_customer
+
 
 
 	        # Subscribe the user to the subscription created
-	        subscription = stripe.Subscription.create(
+            subscription = stripe.Subscription.create(
 	            customer=customer.id,
 	            items=[
 	                {
@@ -64,10 +67,10 @@ def createpayment(request):
 	            ],
 	            expand=["latest_invoice.payment_intent"]
 	        )
-	        djstripe_subscription = djstripe.models.Subscription.sync_from_stripe_data(subscription)
-	        custom_user.subscription = djstripe_subscription
-	        custom_user.save()
-	        return JsonResponse(subscription)
+            djstripe_subscription = djstripe.models.Subscription.sync_from_stripe_data(subscription)
+            custom_user.subscription = djstripe_subscription
+            custom_user.save()
+            return JsonResponse(subscription)
         except Exception as e:
             return JsonResponse({'error':str(e)},status= 403)
 def paymentcomplete(request):
@@ -109,4 +112,12 @@ class ShippingView(LoginRequiredMixin, View):
 
         return HttpResponseRedirect(reverse('core:checkout'))
 
-    
+class ShippingUpdateView(LoginRequiredMixin, UpdateView):
+    model=A
+    form_class = SubscribeForm
+    template_name = 'core/shipping_update.html'
+
+
+    def get_success_url(self):
+        pk = self.object.pk
+        return reverse_lazy('users:account',args=[pk])

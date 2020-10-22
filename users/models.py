@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from djstripe.models import Subscription, Customer
+from django.utils.functional import cached_property
+from djstripe.utils import subscriber_has_active_subscription
 from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
@@ -15,6 +17,11 @@ class CustomUser(AbstractUser):
         help_text="The user's Stripe Subscription object, if it exists"
     )
 
+    @cached_property
+    def has_active_subscription(self):
+        """Checks if a user has an active subscription."""
+        return subscriber_has_active_subscription(self)
+
     def __str__(self):
         return (self.email)
 
@@ -22,3 +29,9 @@ class CustomUser(AbstractUser):
         if not self.username:
             self.username = self.email
         super(CustomUser,self).save(*args,**kwargs)
+
+class LaunchSignUp(models.Model):
+    email = models.EmailField(_('email address'), unique=True)
+
+    def __str__(self):
+        return (self.email)

@@ -1,15 +1,29 @@
 {% extends "user_base.html" %}
 {% block user_content %}
 
-<div class="row">
-<div class="card mb-4 wow fadeIn">
-  <!--Card content-->
-  <div class="card-body d-sm-flex justify-content-between">
-    <h4 class="mb-2 mb-sm-0 pt-1">
-      Welcome, {{user.first_name}}
-    </h4>
+<div class="card">
+  <div class="card-header">
+    Hello, {{user.first_name}}
   </div>
-</div>
+  <div class="card-body  mb-2">
+    <h5 class="card-title">Account Info</h5>
+    <p class="card-text">Name: <span class="float-right">
+      {{user.first_name}} {{user.last_name}}
+      <a href="{% url 'users:profile-update' pk=user.pk %}"><i class="fa fa-pencil"></i></a>
+    </span>
+    </p>
+    <p class="card-text">Email: <span class="float-right">{{user.email}}
+      <a href="{% url 'users:profile-update' pk=user.pk %}"><i class="fa fa-pencil"></i></a>
+    </span></p>
+    <p class="card-text">Shipping Address:
+      <span class="float-right">{{street_address}}{% if apt_address %}, {{apt_address}}{% endif %} <br>
+        {{city}}, {{state}} {{zip}}
+        <a href="{% url 'core:shipping-update' pk=address_pk %}"><i class="fa fa-pencil"></i></a>
+      </span>
+    </p>
+    <br>
+    <p class="card-text">Payment Method: <span class="float-right">**** **** **** {{last4}}</span></p>
+  </div>
 </div>
 <!-- Heading -->
 
